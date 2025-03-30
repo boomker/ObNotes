@@ -1,7 +1,7 @@
 ## 奇技淫巧(持续更新)
 
 ### 一. 包管理更新提速
-#### 1. npm/cnpm 镜像源
+#### 1. Npm/cnpm 镜像源
 ```bash
 # 安装包时指定源
 npm install -gd package --registry=http://registry.npm.taobao.org
@@ -32,10 +32,10 @@ git log main --oneline -18 |grep -v "lockfile" |COL1 |tac |xargs git cherry-pick
 	`alias -g COL1="awk '{ print \$1 }'"`
 # `-x`: append commit name
 # `-m 1`: 遇到Meger 分支，选择 MainLine 分支的 commit 来应用
-# -----
-glp main  --since=16.days --grep="lockfile" --invert-grep |C1 |tac |X git cherry-pick -m 1 -x
+
+glp main --since=16.days --grep="lockfile" --invert-grep |C1 |tac |X git cherry-pick -m 1 -x
 # glp :
-	`alias glp="git log --pretty=format:'%Cred%h%Creset - %s %Cgreen(%cr) %C(bold blue)%an%Creset %C(yellow)%d%Creset' " `
+	`alias glp="git log --pretty=format:'%Cred%h%Creset - %s %Cgreen(%cr) %C(bold blue)%an%Creset %C(yellow)%d%Creset'"`
 # C1:
 	`alias -g C1="|choose 0"`
 ```
@@ -98,6 +98,7 @@ awk 'NR==FNR{s[$1]++}{if(NR!=FNR && $0 !~ /^$/){a[$1]++}}END{for(i in s)if(a[i]<
 #### 6. 已知某列字符串，批量替换另外一列
 ```bash
 choose -i a 0 |xargs -I % gsed -i -r 's/^%(\t.*)\t([0-9 ]+)$/%\1\t1/g' cn_dicts/flypy_twords.dict.yaml
+parallel 'gsed -i -r "/\({1}\).*vh/s/vh/ih/" {2}' ::: $(hck -f1 repf|paste -s -d '|') ::: flypy_sext.yaml
 ```
 
 #### 7. 相邻接的奇偶行，同列比大小，取小打印
@@ -114,13 +115,24 @@ awk '{s[$1$2$3]++}END{for(i in s)if(s[i]>1)print substr(i,1,2)}' a |xargs -I % r
 #### 9. 字段长度不合规定的行搂出来
 ```bash
 awk -F'\t' '{if(length(gensub(" ","","g", $2))%2!=0)print $0}' cn_dicts/flypy_super_ext.dict.yaml 
+zawk -F'\t' 'NR>11{if(length(gensub(" ","","g", $2))/2 != length(gensub(/[-·]/,"", "g", $1))) {print $0}}' cn_dicts/flypy_ext.dict.yaml
 ```
 
 #### 10. 精准替换指定位置的字符串
 ```bash
-awk -F'\t'  '{split($1, arr, 'x');split($2, s, " ");{for(i in arr){if(arr[i]=="价" && s[i]=="jp")print $0}}}' wer
-awk -F'\t'  '{x=index($1, "系");split($2, a, " ");{if(a[x]=="ji"){a[x]="xi";zm=""}};{for(j in a){zm=zm?zm" "a[j]:a[j]}}{print $1"\t"zm"\t"$NF}}' jkl >jjj
-parallel  --no-run-if-empty --xapply sd {1} {2} jkl ::: "$(awk -F'\t' '{print $0}' jkl)" ::: "$(awk -F'\t' '{print $0}' jjj)"
+awk -F'\t' '{split($1, arr, 'x');split($2, s, " ");{for(i in arr){if(arr[i]=="价" && s[i]=="jp")print $0}}}' wer
+awk -F'\t' '{x=index($1, "系");split($2, a, " ");{if(a[x]=="ji"){a[x]="xi";zm=""}};{for(j in a){zm=zm?zm" "a[j]:a[j]}}{print $1"\t"zm"\t"$NF}}' jkl >jjj
+parallel --no-run-if-empty --xapply sd {1} {2} jkl ::: "$(awk -F'\t' '{print $0}' jkl)" ::: "$(awk -F'\t' '{print $0}' jjj)"
+```
+
+#### 11. 并行给多个文件从指定行排序
+```bash
+parallel 'nvim --clean -es +":11,\$!gsort -u" +wq {1}' ::: flypy_sext{2..5}.dict.yaml flypy_zhwiki.dict.yaml
+```
+
+#### 12. 找出两文件 KEY 一样 Value 不一样的行
+```bash
+zawk 'BEGIN { FS="\t" } NR==FNR { array[$1]=$2; next }; NR!=FNR && FNR>11{if(array[$1] && array[$1]!=$2) {print $1"\t"$2" -|- "array[$1]}}' flypy_a.dict.yaml flypy_zhwiki.dict.yaml > diff_aw
 ```
 
 ### 五.  Bash  技巧

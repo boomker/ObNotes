@@ -1,8 +1,8 @@
 # Welcome to boomker’s blog!
 
 ## 专题系列
-*    [openstack 和 kvm常用命令](article/openstack%20和%20kvm常用命令.md) 
-*	 [Openstack&虚拟化疑难杂症](article/Openstack&虚拟化疑难杂症.md) 
+*   [Openstack 和 kvm常用命令](article/openstack%20和%20kvm常用命令.md) 
+*   [Openstack&虚拟化疑难杂症](article/Openstack&虚拟化疑难杂症.md)
 *   [容器或 k8s 常见疑难杂症](article/容器或%20k8s%20常见疑难杂症.md)
 -   [数据库 MySQL 常见疑难杂症 ](article/sql-exercises.md)
 -   [Python 全栈之路](article/python-full-stack-way.md)
