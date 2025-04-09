@@ -68,15 +68,19 @@ awk -F'[ \t[]+' '{if(NR<13){print $0}else{x=substr($3,1,1);y=substr($5,1,1);prin
 
 #### 1. 同文件不同列合并输出
 ```bash
-parallel  --no-run-if-empty  --xapply echo {1}: {2} ::: $(awk -F'[:,]+' '{print $4}' char_common_base.json) ::: "$(awk -F'[][]+' '{print $2}' char_common_base.json)" |tee > hzpy.txt
+parallel --no-run-if-empty  --xapply echo {1}: {2} \
+::: $(awk -F'[:,]+' '{print $4}' char_common_base.json) ::: "$(awk -F'[][]+' '{print $2}' char_common_base.json)" |tee > hzpy.txt
 # xapply: 对输入源进行一一对应排列， 输入源整体加上双引号视为整体
 ```
 
 #### 2. 同字段值的列去重
 ```bash
-echo '"嚷":  "rǎng", "rāng" \n "嚼":  "jiáo", "jué", "jiào" \n "颤":  "chàn", "zhàn"' |sed 'y/íǐáàǎāé/iiaaaae/' |awk -F'[:,]+' -vORS=" "   '{for(i=1;i<=NF;i++)s[gensub(" ", "", "g",$i),NR]++}{for(j in s){split(j,b,SUBSEP);if(b[2]==NR)print b[1]}printf "\n"}'
+echo '"嚷":  "rǎng", "rāng" \n "嚼":  "jiáo", "jué", "jiào" \n "颤":  "chàn", "zhàn"' \
+|sed 'y/íǐáàǎāé/iiaaaae/' \
+|awk -F'[:,]+' -vORS=" " '{for(i=1;i<=NF;i++)s[gensub(" ", "", "g",$i),NR]++}{for(j in s){split(j,b,SUBSEP);if(b[2]==NR)print b[1]}printf "\n"}'
 # 数组 key 必须携带行号NR， 不然多个字段会被视为多行； 
 # 指定输出记录分隔符为空格，避免每个字段都以每行输出
+sed -i -e 'y/āáǎàōóǒòēéěèīíǐìūúǔùǖǘǚǜü/aaaaooooeeeeiiiiuuuuvvvvv/' -re 's/(ń|ň|ǹ)/en/1' a.dict.yaml
 ```
 
 #### 3. 同字段值的行提取出来放一起
@@ -115,7 +119,7 @@ awk '{s[$1$2$3]++}END{for(i in s)if(s[i]>1)print substr(i,1,2)}' a |xargs -I % r
 #### 9. 字段长度不合规定的行搂出来
 ```bash
 awk -F'\t' '{if(length(gensub(" ","","g", $2))%2!=0)print $0}' cn_dicts/flypy_super_ext.dict.yaml 
-zawk -F'\t' 'NR>11{if(length(gensub(" ","","g", $2))/2 != length(gensub(/[-·]/,"", "g", $1))) {print $0}}' cn_dicts/flypy_ext.dict.yaml
+awk -F'\t' 'NR>11{if(length(gensub(" ","","g", $2))/2 != length(gensub(/[-·]/,"", "g", $1))) {print $0}}' 
 ```
 
 #### 10. 精准替换指定位置的字符串
@@ -132,7 +136,7 @@ parallel 'nvim --clean -es +":11,\$!gsort -u" +wq {1}' ::: flypy_sext{2..5}.dict
 
 #### 12. 找出两文件 KEY 一样 Value 不一样的行
 ```bash
-zawk 'BEGIN { FS="\t" } NR==FNR { array[$1]=$2; next }; NR!=FNR && FNR>11{if(array[$1] && array[$1]!=$2) {print $1"\t"$2" -|- "array[$1]}}' flypy_a.dict.yaml flypy_zhwiki.dict.yaml > diff_aw
+zawk 'BEGIN { FS="\t" } NR==FNR { array[$1]=$2; next }; NR!=FNR && FNR>11{if(array[$1] && array[$1]!=$2) {print $1"\t"$2" -- "array[$1]}}' flypy_a.dict.yaml flypy_zhwiki.dict.yaml > diff_aw
 ```
 
 ### 五.  Bash  技巧
